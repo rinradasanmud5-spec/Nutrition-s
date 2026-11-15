@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แดชบอร์ดงานโภชนาการ · โรงพยาบาลเทพา</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="banner">
+      <div class="banner-left"><div class="banner-icon">🥗</div><div><h1>แดชบอร์ดงานโภชนาการ</h1><p>โรงพยาบาลเทพา</p></div></div>
+      <div class="banner-right"><span class="cloud-pill" id="cloud-status">⏳ กำลังซิงค์...</span><button class="sync-btn" onclick="pullFromCloud(true, false)">🔄 อัปเดต</button></div>
+    </header>
+    <nav class="main-tabs">
+      <button class="tab-btn active" id="tab-btn-dashboard" onclick="switchMainTab('dashboard')">1. แดชบอร์ด</button>
+      <button class="tab-btn" id="tab-btn-entry" onclick="switchMainTab('entry')">2. บันทึกข้อมูล</button>
+      <button class="tab-btn" id="tab-btn-report" onclick="switchMainTab('report')">3. รายงานผล</button>
+    </nav>
+    <section id="tab-dashboard">
+      <div class="date-bar"><div class="date-pill-wrap"><div class="date-pill"><span id="dash-date-label"></span></div><input type="date" class="native-date-input" id="dash-date-input" onchange="onDateChange(this.value)" /></div></div>
+      <div class="kpi-grid" id="dash-kpi-grid"></div>
+      <div class="card"><h2 class="card-title" id="dash-daily-table-title">ผู้รับบริการรายวัน</h2><div class="table-wrap" id="dash-daily-table"></div></div>
+      <div class="card">
+        <h2 class="card-title">บุคลากรมาทำงาน</h2>
+        <div class="two-col"><div><p class="sub-heading" id="dash-att-date-sub"></p><div class="donut-wrap" id="dash-att-donut"></div></div><div><p class="sub-heading" id="dash-att-month-sub"></p><div class="hbar-list" id="dash-att-bars"></div></div></div>
+        <hr class="divider" /><div id="dash-att-notes"></div>
+      </div>
+      <div class="card"><h2 class="card-title">จำนวนมื้อ 14 วันถึงวันที่เลือก (แยกตามมื้อ)</h2><div class="chart-legend"><span><i class="dot" style="background:var(--green)"></i> เช้า</span><span><i class="dot" style="background:var(--amber)"></i> เที่ยง</span><span><i class="dot" style="background:var(--blue)"></i> เย็น</span></div><div id="dash-14days-chart"></div></div>
+      <div class="card"><h2 class="card-title" id="dash-month-cat-title">ผู้รับบริการแยกตามประเภท</h2><div class="hbar-list" id="dash-month-cat-bars"></div></div>
+      <div class="card"><h2 class="card-title" id="dash-month-ratio-title">สัดส่วนผู้รับบริการ</h2><div class="two-col"><div><p class="sub-heading">แยกตามประเภท</p><div class="donut-wrap" id="dash-month-donut-cat"></div></div><div><p class="sub-heading">แยกตามมื้อ</p><div class="donut-wrap" id="dash-month-donut-meal"></div></div></div></div>
+    </section>
+    <section id="tab-entry" class="hidden">
+      <div class="date-bar"><div class="date-pill-wrap"><div class="date-pill"><span id="entry-date-label"></span></div><input type="date" class="native-date-input" id="entry-date-input" onchange="onDateChange(this.value)" /></div></div>
+      <div class="sub-tabs"><button class="sub-tab-btn active" id="subtab-btn-meals" onclick="switchSubTab('meals')">2.1 ผู้รับบริการ</button><button class="sub-tab-btn" id="subtab-btn-staff" onclick="switchSubTab('staff')">2.2 บุคลากร</button></div>
+      <div id="subtab-meals" class="card">
+        <h2 class="card-title">จำนวนผู้รับบริการ แยกตามมื้อ</h2>
+        <div class="table-wrap"><table><thead><tr><th>ประเภท</th><th class="num">เช้า</th><th class="num">เที่ยง</th><th class="num">เย็น</th></tr></thead><tbody id="entry-meals-tbody"></tbody></table></div>
+        <div style="margin-top:16px;"><label style="display:block;font-size:14px;color:var(--muted);margin-bottom:6px;">หมายเหตุ</label><textarea class="note-box" id="entry-meal-note" placeholder="ระบุหมายเหตุเพิ่มเติมสำหรับวันนี้ (ถ้ามี)..."></textarea></div>
+        <div class="btn-row"><button class="btn-primary" id="save-meals-btn" onclick="saveMeals()">บันทึกข้อมูลวันนี้</button><button class="btn-danger-outline hidden" id="delete-meals-btn" onclick="deleteMeals()">ลบข้อมูลวันนี้</button><span class="helper-text" id="meals-status-hint"></span></div>
+      </div>
+      <div id="subtab-staff" class="hidden">
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;"><h2 class="card-title" style="margin:0;">บันทึกการมาทำงานของบุคลากร</h2><button class="btn-soft" onclick="document.getElementById('staff-manager-card').classList.toggle('hidden')">⚙️ จัดการรายชื่อบุคลากร</button></div><div id="entry-staff-list"></div><div class="btn-row"><button class="btn-primary" id="save-staff-btn" onclick="saveAttendance()">บันทึกข้อมูลบุคลากร</button><span class="helper-text" id="staff-status-hint"></span></div></div>
+        <div class="card hidden" id="staff-manager-card"><h2 class="card-title">จัดการรายชื่อบุคลากร</h2><div style="display:flex;gap:10px;flex-wrap:wrap;"><input type="text" id="new-staff-name" class="reason-input" style="max-width:320px;" placeholder="พิมพ์ชื่อ-นามสกุลบุคลากรใหม่..." /><button class="btn-primary" onclick="addStaffMember()">+ เพิ่มบุคลากร</button></div><div class="staff-chip-list" id="staff-chip-list"></div></div>
+      </div>
+    </section>
+    <section id="tab-report" class="hidden">
+      <div class="card"><h2 class="card-title">เลือกช่วงวันที่</h2><div class="range-bar"><div class="range-field"><label>ตั้งแต่</label><div class="date-pill-wrap"><div class="date-pill" id="rep-start-label"></div><input type="date" class="native-date-input" id="rep-start-input" onchange="onReportRangeChange()" /></div></div><div class="range-field"><label>ถึง</label><div class="date-pill-wrap"><div class="date-pill" id="rep-end-label"></div><input type="date" class="native-date-input" id="rep-end-input" onchange="onReportRangeChange()" /></div></div><button class="btn-soft" onclick="downloadCSV()">📥 ดาวน์โหลด CSV</button></div></div>
+      <div class="kpi-grid" id="rep-kpi-grid"></div>
+      <div class="card"><h2 class="card-title">สรุปตามประเภทผู้รับบริการ</h2><div class="table-wrap" id="rep-cat-table"></div></div>
+      <div class="card"><h2 class="card-title">สัดส่วนตามประเภท (ช่วงที่เลือก)</h2><div class="hbar-list" id="rep-cat-bars"></div></div>
+      <div class="card"><h2 class="card-title">สัดส่วนผู้รับบริการ (ช่วงที่เลือก)</h2><div class="two-col"><div><p class="sub-heading">แยกตามประเภท</p><div class="donut-wrap" id="rep-donut-cat"></div></div><div><p class="sub-heading">แยกตามมื้อ</p><div class="donut-wrap" id="rep-donut-meal"></div></div></div></div>
+      <div class="card"><h2 class="card-title">จำนวนมื้อรายวัน</h2><div class="chart-legend"><span><i class="dot" style="background:var(--green)"></i> เช้า</span><span><i class="dot" style="background:var(--amber)"></i> เที่ยง</span><span><i class="dot" style="background:var(--blue)"></i> เย็น</span></div><div id="rep-daily-chart"></div></div>
+      <div class="card"><h2 class="card-title">รายวัน</h2><div class="table-wrap" id="rep-daily-table"></div></div>
+      <div class="card"><h2 class="card-title">การมาทำงานของบุคลากร</h2><div class="table-wrap" id="rep-staff-table"></div><p class="helper-text" id="rep-staff-foot" style="margin:12px 0 0;"></p></div>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
